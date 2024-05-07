@@ -6,6 +6,8 @@ CLUSTER_A = 'broker1_a.hostname:9093,broker2_a.hostname:9093,broker3_a.hostname:
 CLUSTER_B = 'broker1_b.hostname:9093,broker2_b.hostname:9093,broker3_b.hostname:9093,broker4_b.hostname:9093,broker5_b.hostname:9093'
 TOPIC_NAME = 'dual_ingest_topic'
 CERTFILE = '/opt/certs/cert.pem'
+# Replace with your actual log file path from where you pick the messages to send via the producer
+LOG_FILE_PATH = '/opt/test/kafka-message-feed-input.txt'  
 
 
 def tail_log_file(log_file_path):
@@ -45,5 +47,4 @@ def tail_log_file(log_file_path):
         print(f"Error reading file: {e}")
 
 if __name__ == '__main__':
-    log_file_path = '/opt/test/kafka-message-feed-input.txt'  # Replace with your actual log file path
-    tail_log_file(log_file_path)
+    tail_log_file(LOG_FILE_PATH)
