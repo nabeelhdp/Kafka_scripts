@@ -1,5 +1,6 @@
 from kafka import KafkaProducer
 import time
+import argparse
 
 # Set your Kafka broker details
 CLUSTER_A = 'broker1_a.hostname:9093,broker2_a.hostname:9093,broker3_a.hostname:9093,broker4_a.hostname:9093,broker5_a.hostname:9093'
@@ -9,8 +10,16 @@ CERTFILE = '/opt/certs/cert.pem'
 # Replace with your actual log file path from where you pick the messages to send via the producer
 LOG_FILE_PATH = '/opt/test/kafka-message-feed-input.txt'  
 
+def parse_arg(argv):
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--mode', choices=['dual', 'srm'], default='srm', 
+                        help='Accepted values are dual for Dual Ingestion and srm for writing to one topic expecting SRM to handle the replication. 
+                        Defaults to srm if not specified')
+    args = parser.parse_args()
+    return args.mode
 
-def tail_log_file(log_file_path):
+
+def tail_log_file(log_file_path,script_mode):
     try:
         producer_A = KafkaProducer(bootstrap_servers=CLUSTER_A,
                           security_protocol='SASL_SSL',
@@ -18,11 +27,13 @@ def tail_log_file(log_file_path):
                           ssl_cafile=CERTFILE,
                           sasl_mechanism = 'GSSAPI')
 
-        producer_B = KafkaProducer(bootstrap_servers=CLUSTER_B,
-                          security_protocol='SASL_SSL',
-                          ssl_check_hostname=True,
-                          ssl_cafile=CERTFILE,
-                          sasl_mechanism = 'GSSAPI')
+        producer_B = ""
+        if script_mode == "dual":
+            producer_B = KafkaProducer(bootstrap_servers=CLUSTER_B,
+                              security_protocol='SASL_SSL',
+                              ssl_check_hostname=True,
+                              ssl_cafile=CERTFILE,
+                              sasl_mechanism = 'GSSAPI')
 
         with open(log_file_path, 'r') as file:
             # Read the entire file initially
@@ -36,8 +47,9 @@ def tail_log_file(log_file_path):
                         # Send each new line to Kafka topic
                         producer_A.send(TOPIC_NAME, line.strip().encode('utf-8'))
                         producer_A.flush()
-                        producer_B.send(TOPIC_NAME, line.strip().encode('utf-8'))
-                        producer_B.flush()
+                        if script_mode == "dual":
+                            producer_B.send(TOPIC_NAME, line.strip().encode('utf-8'))
+                            producer_B.flush()
  
                 # Wait for a short interval before checking again
                 time.sleep(1)
@@ -47,4 +59,5 @@ def tail_log_file(log_file_path):
         print(f"Error reading file: {e}")
 
 if __name__ == '__main__':
-    tail_log_file(LOG_FILE_PATH)
+    script_mode = parse_arg(argv)
+    tail_log_file(LOG_FILE_PATH,script_mode)
