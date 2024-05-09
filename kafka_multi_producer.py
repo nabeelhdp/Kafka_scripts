@@ -13,8 +13,7 @@ LOG_FILE_PATH = '/opt/test/kafka-message-feed-input.txt'
 def parse_arg(argv):
     parser = argparse.ArgumentParser()
     parser.add_argument('--mode', choices=['dual', 'srm'], default='srm', 
-                        help='Accepted values are dual for Dual Ingestion and srm for writing to one topic expecting SRM to handle the replication. 
-                        Defaults to srm if not specified')
+                        help='Defaults to SRM, else choose dual or srm')
     args = parser.parse_args()
     return args.mode
 
