@@ -10,7 +10,7 @@ CERTFILE = '/opt/certs/cert.pem'
 # Replace with your actual log file path from where you pick the messages to send via the producer
 LOG_FILE_PATH = '/opt/test/kafka-message-feed-input.txt'  
 
-def parse_arg(argv):
+def parse_arg():
     parser = argparse.ArgumentParser()
     parser.add_argument('--mode', choices=['dual', 'srm'], default='srm', 
                         help='Defaults to SRM, else choose dual or srm')
@@ -58,5 +58,5 @@ def tail_log_file(log_file_path,script_mode):
         print(f"Error reading file: {e}")
 
 if __name__ == '__main__':
-    script_mode = parse_arg(argv)
+    script_mode = parse_arg()
     tail_log_file(LOG_FILE_PATH,script_mode)
